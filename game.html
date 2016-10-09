@@ -1,0 +1,1715 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="msapplication-tap-highlight" content="no">
+    <meta name="format-detection" content="telephone=no">
+
+    <title>劲舞达人</title>
+    <!-- zepto    -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/zepto/1.2.0/zepto.min.js"></script>
+    <!--  arttemplate  -->
+    <script src="//s.momocdn.com/w/js/2016/06/23/1466650111860-JPee8732c45657bb37bbab94f639542102.js"></script>
+    <script src="/static/m4/js/createjs/createjs.min.js"></script>
+    <script src="//s.momocdn.com/w/u/js/custom/sumireming/jwt/song.js?t=123"></script>
+
+    <link href="//s.momocdn.com/w/css/2016/06/15/1465974463984-CP99886875b07c83d44f606191921ca875.css" rel="stylesheet" />
+
+
+
+    <script>
+
+        ;
+        (function() {
+            /**
+             * 动态加载js文件
+             * @param  {string}   url      js文件的url地址
+             * @param  {Function} callback 加载完成后的回调函数
+             */
+            var _getScript = function(url, callback) {
+                var head = document.getElementsByTagName('head')[0],
+                    js = document.createElement('script');
+
+                js.setAttribute('type', 'text/javascript');
+                js.setAttribute('src', url);
+
+                head.appendChild(js);
+
+                //执行回调
+                var callbackFn = function(){
+                    if(typeof callback === 'function'){
+                        callback();
+                    }
+                };
+
+                if (document.all) { //IE
+                    js.onreadystatechange = function() {
+                        if (js.readyState == 'loaded' || js.readyState == 'complete') {
+                            callbackFn();
+                        }
+                    }
+                } else {
+                    js.onload = function() {
+                        callbackFn();
+                    }
+                }
+            }
+
+            //如果使用的是zepto，就添加扩展函数
+            if(Zepto){
+                $.getScript = _getScript;
+            }
+
+        })();
+
+
+        template.config('openTag', '<<')
+        template.config('closeTag', '>>')
+
+        window._DATA = {};
+        _DATA.highscore = '{{$top_score}}';
+        _DATA.momoid = '{{$momoid}}';
+        {{if $scene_id}}
+        _DATA.scene_id = '{{$scene_id}}';
+        {{/if}}
+        {{if $scene_type}}
+        _DATA.scene_type = '{{$scene_type}}';
+        {{/if}}
+        _DATA.is_share = '{{$is_from_share}}';
+        _DATA.from_momoid = '{{$from_momoid}}';
+
+        window.sourceid = '{{$sourceid}}';
+
+
+        // Scroll loading elements with callback
+        (function($) {
+
+            $.fn.scrollLoad = function(callback, threshold) {
+
+                var $w = $(window),
+                    th = threshold || 0,
+                    elems = this,
+                    loaded,
+                    timeoutId = null; //节流
+
+                this.one("scrollLoad", function() {
+                    var $this = $(this)
+
+                    if (!$this.data('loaded') ) {
+                        $(this).data('loaded', true);
+                        if (typeof callback === "function") callback.call(this);
+
+                    }
+                });
+
+                function scrollLoad() {
+                    clearTimeout(timeoutId);
+                    timeoutId = null;
+
+                    elems = elems.filter(function(){
+                        // filter the element that is not loaded only.
+                        return !$(this).data('loaded')
+                    })
+
+                    timeoutId = setTimeout(function(){
+                        var inview = elems.filter(function() {
+                            var $e = $(this);
+                            // zepto don't support the pseudo filter ':hidden'
+                            if($e.css('display')=='none' || $e.css('visibility')=='hidden' ) return;
+
+                            var wt = $w.scrollTop(),
+                                wb = wt + $w.height(),
+                                et = $e.offset().top,
+                                eb = et + $e.height();
+
+                            return eb >= wt - th && et <= wb + th;
+                        });
+
+                        loaded = inview.trigger("scrollLoad")
+                        elems = elems.not(loaded)
+                    },50)
+                }
+
+                $w.on("scroll.scrollLoad resize.scrollLoad lookup.scrollLoad", scrollLoad);
+
+                scrollLoad();
+
+                return this;
+
+            };
+
+        })(window.jQuery || window.Zepto);
+
+
+    </script>
+
+
+</head>
+<style type="text/css">
+
+    img {max-width: none; }
+
+    {{if $sourceid == 'share_weixin'}}
+    body {width:100%; height: 100%; background-image: url(//s.momocdn.com/w/u/img/2016/07/01/1467359197942-wx_bg.jpg); background-size: 100% 100%; background-repeat: no-repeat; background-position: center center; background-color: #060412; position: relative; }
+    {{else}}
+    body {width:100%; height: 100%; background-image: url(/static/m4/img/gamecenter/jwt/index-bg.jpg); background-size: 100% 100%; background-repeat: no-repeat; background-position: center center; background-color: #060412; position: relative; }
+    {{/if}}
+
+    body .wrapper {position: absolute; top: 0px; left: 0px; right: 0px; bottom: 0px; margin: auto; overflow: hidden;}
+
+    body .transparent-mask {width: 100%; height: 100%; position: absolute; background-color: rgba(0,0,0,0.7); opacity: 0; -webkit-transition:opacity 0.36s ease; transition: opacity 0.36s ease;}
+    canvas {width: 100%; text-indent: -10000px; background-image: url(/static/m4/img/gamecenter/jwt/game-popup.png); background-size: 100%; background-repeat: no-repeat; background-position: center center; position: absolute; top: 0px; left: 0px; right: 0px; bottom: 0px; margin: auto; -webkit-transform: translate3D(0, 600px, 0); transform: translate3D(0, 600px, 0); }
+    canvas.animation {-webkit-transition: -webkit-transform 1.5s ease; transition: transform 1.5s ease;}
+
+    body.start-game .transparent-mask {opacity: 1;}
+    body.start-game canvas { text-indent: 0px; -webkit-transform: translate3D(0, 0, 0); transform: translate3D(0, 0, 0); }
+    body.start-game .main-btns {display: none;}
+    body.start-game .current-score {display: block;}
+
+    body.end-game .transparent-mask {opacity: 1;}
+    body.end-game .main-btns {display: none;}
+    body.end-game .popup {text-indent: 0px; -webkit-transform: translate3D(0, 0, 0); transform: translate3D(0, 0, 0);}
+
+    body.rank-show .transparent-mask {opacity: 1;}
+    body.rank-show .main-btns {display: none; }
+    body.rank-show .rank {text-indent: 0px; -webkit-transform: translate3D(0, 0, 0); transform: translate3D(0, 0, 0);}
+
+    body.rules-show .transparent-mask {opacity: 1;}
+    body.rules-show .main-btns {display: none; }
+    body.rules-show .rules {text-indent: 0px; -webkit-transform: translate3D(0, 0, 0); transform: translate3D(0, 0, 0);}
+
+    .spinner {
+        text-align: center;
+        width: 50px;
+        height: 60px;
+        font-size: 10px;
+        position: absolute;
+        left: 50%;
+        margin-left: -30px;
+        top:45%;
+        opacity: 0.8;
+        display: none;
+    }
+
+    .spinner > div {
+        background-color: #9519ff;
+        height: 100%;
+        width: 6px;
+        display: inline-block;
+        -webkit-animation: stretchdelay 1.2s infinite ease-in-out;
+        animation: stretchdelay 1.2s infinite ease-in-out;
+    }
+
+    .spinner .rect2 {
+        -webkit-animation-delay: -1.1s;
+        animation-delay: -1.1s;
+    }
+
+    .spinner .rect3 {
+        -webkit-animation-delay: -1.0s;
+        animation-delay: -1.0s;
+    }
+
+    .spinner .rect4 {
+        -webkit-animation-delay: -0.9s;
+        animation-delay: -0.9s;
+    }
+
+    .spinner .rect5 {
+        -webkit-animation-delay: -0.8s;
+        animation-delay: -0.8s;
+    }
+
+    @-webkit-keyframes stretchdelay {
+        0%, 40%, 100% { -webkit-transform: scaleY(0.4) }
+        20% { -webkit-transform: scaleY(1.0) }
+    }
+
+    @keyframes stretchdelay {
+        0%, 40%, 100% {
+            transform: scaleY(0.4);
+            -webkit-transform: scaleY(0.4);
+        }  20% {
+           transform: scaleY(1.0);
+           -webkit-transform: scaleY(1.0);
+       }
+    }
+
+    .main-btns {width: 90%; height: 150px; position: absolute; left: 5%; bottom: 12%; overflow: hidden; }
+    .main-btns>div {height: 100%; overflow: hidden; text-align: center;}
+    .main-btns .left, .main-btns .right {width: 30%; }
+    .main-btns .left img, .main-btns .right img {width: 80%; margin-top: 8px; }
+    .main-btns .middle {width: 40%;  }
+    .main-btns .middle img {width: 95%;}
+    .main-btns .left, .main-btns .middle {float: left;}
+    .main-btns .right {position: absolute; right: 0px; top: 0px;}
+
+    .rank {position: absolute; width: 300px; left: 50%; margin-left: -150px; top: 8%; -webkit-transform: translate3D(-600px, 0, 0); transform: translate3D(-600px, 0, 0); -webkit-transform 0.8s ease; transition: transform 0.8s ease; text-indent: -10000px; }
+    .rank .rank-title {}
+    .rank .rank-title img {width: 100%;}
+    .rank .rank-nav {width: 88%; margin: 8px auto; height: 36px; }
+    .rank .rank-nav ul {position: relative; }
+    .rank .rank-nav ul li {display: inline-block; height: 28px; width: 50%; background-color: #b028ec; float: left; border-bottom: 3px solid #490870; }
+    .rank .rank-nav ul li.left {border-top-left-radius: 15px; border-bottom-left-radius: 15px; border-right: 2px solid #581078; position: relative; z-index: 1;}
+    .rank .rank-nav ul li.right {border-top-right-radius: 15px; border-bottom-right-radius: 15px; float: none; position: absolute; top: 0px; right: 0px; }
+    .rank .rank-nav ul li.active {background-color: #8408b9; }
+    .rank .rank-nav ul li.active p {color: #ffdd24; }
+    .rank .rank-nav ul li p {text-align: center; line-height: 28px; color: #360766; font-weight: bold;  }
+    .rank .rank-main {height: 420px; overflow-y: scroll; clear: both; width: 94%; margin: 0px auto;  }
+    .rank .rank-main ul {}
+    .rank .rank-main ul li { position: relative; }
+    .rank .rank-main ul li>div {position: absolute; top: 0px; }
+    .rank .rank-main ul li .rank-one-bg {width: 100%; position: relative; }
+    .rank .rank-main ul li .left {top:12px; left: 12px;}
+    .rank .rank-main ul li .left img {width: 60px; height: 60px; border-radius: 64px; }
+    .rank .rank-main ul li .middle {left: 90px; top: 24px; right: 64px; }
+    .rank .rank-main ul li .middle>p {overflow: hidden; white-space: nowrap;word-break: break-all;text-overflow: ellipsis;}
+    .rank .rank-main ul li .middle .username {color: #fec1ff; display: inline-block; height: 20px; line-height: 20px; width: 100%; }
+    .rank .rank-main ul li .middle .userscore {color: #ffd619; }
+    .rank .rank-main ul li .right {right: 14px; top: 17px;}
+    .rank .rank-main ul li .right img {width: 48px; height: 48px; border-radius: 48px; }
+    .rank .rank-main ul li .rank-num {position: absolute; width: 24px; height: 24px; background-color: #9d07d6; border-radius: 12px; color: #fff; text-align: center; top: -3px; left: 0px; font-size: 14px; line-height: 20px; }
+    .rank .rank-main ul li .rank-num.rank-num-sp {background-color: transparent; background-image: url(http://cdnst.momocdn.com/w/u/img/2016/06/28/1467098667508-crowd.png); background-repeat: no-repeat; background-size: 25px; }
+    .rank .rank-main ul li .rank-num.rank-num-1 {background-position: 0px 0px;}
+    .rank .rank-main ul li .rank-num.rank-num-2 {background-position: 0px -27px;}
+    .rank .rank-main ul li .rank-num.rank-num-3 {background-position: 0px -57px;}
+
+    .rules {position: absolute; width: 300px; left: 50%; margin-left: -150px; top: 8%; -webkit-transform: translate3D(600px, 0, 0); transform: translate3D(600px, 0, 0); -webkit-transform 0.8s ease; transition: transform 0.8s ease; text-indent: -10000px;}
+    .rules .rules-title {}
+    .rules .rules-title img {width: 100%;}
+    .rules .rules-main { margin-top: 18px; background-image: url(/static/m4/img/gamecenter/jwt/game-popup.png); background-repeat: no-repeat; background-size: 100% 100%; width: 100%; height: 320px;}
+    .rules .rules-content {padding: 18px; }
+    .rules .rules-main p {color: #fec1ff; padding-top: 8px; line-height: 20px; }
+
+    .popup {position: absolute; width: 300px; left: 50%; margin-left: -150px; top: 8%; -webkit-transform: translate3D(0, 600px, 0); transform: translate3D(0, 600px, 0); -webkit-transform 1.5s ease; transition: transform 1.5s ease; text-indent: -10000px;}
+    .popup .popup-main {position: relative;}
+    .popup .popup-main .popup-frame-img {width: 100%; }
+
+    .popup .popup-main .part1 {position: absolute; top: 48px; left: 20px; right: 20px;}
+    .popup .popup-main .part1 ul.result-detail {padding-top: 12px; }
+    .popup .popup-main .part1 ul.result-detail li {display: inline-block; width: 48%; color: #fec1ff; padding: 4px 0px; text-indent: 6px; font-size: 18px; overflow: hidden;}
+    .popup .popup-main .part1 ul.result-detail li .dtname {display: inline-block; width: 72px; font-size: 15px; text-align: right; margin-right: 12px; }
+    .popup .popup-main .part2 {position: absolute; top: 40%; width: 120%; left: -10%; text-align: center;}
+    .popup .popup-main .part2 .popup-result-bar { width: 100%; }
+    .popup .popup-main .part2 .popup-result {position: absolute; width: 100%; top: 0px; color: #ec7d1b; line-height: 64px; font-size: 24px; font-weight: 800; letter-spacing: 2px;}
+    .popup .popup-main .part2 .popup-result .cnt-score {font-size: 44px; margin-right: 6px; }
+    .popup .popup-main .part3 {position: absolute; left: 0px; bottom: 60px; width: 100%; height: 56px; color: #c66cff; }
+    .popup .popup-main .part3 .popup-highscore {line-height: 48px; text-align: center; font-size: 18px; }
+    .popup .popup-footer {padding-top: 12px; text-align: center; }
+    .popup .popup-footer .popup-btn {display: inline-block; width: 32%; overflow: hidden;}
+    .popup .popup-footer .popup-btn img {width: 90%; display: block; margin: 0px auto;}
+
+
+    .current-score {position: absolute; height: 48px; top: 8%; right: 36px; display: none;}
+    .current-score p {color: #ffffff; opacity: 0.7; font-size: 48px; font-weight: bold; letter-spacing: 2px; }
+
+    @media (max-width: 375px) {
+        .popup {-webkit-transform: scale3d(0.8,0.8,0.8); scale3d(0.8,0.8,0.8);}
+        body.end-game .popup {text-indent: 0px; -webkit-transform: scale3d(0.8,0.8,0.8) translate3D(0, 0, 0); transform: scale3d(0.8,0.8,0.8) translate3D(0, 0, 0);}
+
+        .main-btns {bottom: 5%;}
+        .current-score { top: 6%; }
+        .current-score p { font-size: 40px; }
+
+    }
+
+</style>
+<body class="">
+    <img style="position: absolute; top: -300px;" src="http://cdnst.momocdn.com/w/u/img/2016/06/22/1466590768468-type.jpg" />
+    <div class="wrapper">
+        <div class="transparent-mask"></div>
+        <canvas id="Canvas" class="animation"></canvas>
+
+        <div class="current-score">
+            <p></p>
+        </div>
+
+        <div class="spinner">
+            <div class="rect1"></div>
+            <div class="rect2"></div>
+            <div class="rect3"></div>
+            <div class="rect4"></div>
+            <div class="rect5"></div>
+        </div>
+
+        <div class="main-btns">
+            <div class="left">
+                {{if $sourceid == 'share_weixin'}}
+                <img onclick="gotoDL(2)" src="//s.momocdn.com/w/u/img/2016/07/11/1468228297199-newbtn.png">
+                {{else}}
+                <img onclick="showRank()" src="/static/m4/img/gamecenter/jwt/rank-btn.png">
+                {{/if}}
+            </div>
+            <div class="middle">
+                <img onclick="startGame()" src="/static/m4/img/gamecenter/jwt/start-btn.png">
+            </div>
+            <div class="right">
+                <img onclick="showRules()" src="/static/m4/img/gamecenter/jwt/rule-btn.png">
+            </div>
+        </div>
+
+        <div class="rules"></div>
+        <script type="text/html" id="tpl-rules">
+            <div class="rules-title">
+                <img src="http://cdnst.momocdn.com/w/u/img/2016/06/23/1466664712104-rules-title.png">
+            </div>
+            <div class="rules-main">
+                <div class="rules-content">
+                    <p>1、连续输入随机方向键，按下SPACE键，完成perfect；</p>
+                    <p>2、最终成绩算法：perfect个数*10+good个数*5+最高连击数*15；</p>
+                    <p>3、获得高分，分享给好友，一起切磋手速吧；</p>
+                    <p>4、如果虐遍好友无敌手，欢迎PK排行榜上高分玩家；</p>
+                    <p>5、以上游戏说明及版权，归陌陌游戏所有。</p>
+                </div>
+            </div>
+        </script>
+
+        <div class="rank">
+            <div class="rank-title">
+                <img src="/static/m4/img/gamecenter/jwt/rank-title.png" >
+            </div>
+            <div class="rank-nav-wrapper"></div>
+            <div class="rank-main">
+                <ul class="ranklist"></ul>
+                <div class="loadmore" style="text-align: center; width: 100%; "></div>
+            </div>
+        </div>
+        <script type="text/html" id="tpl-ranknav">
+            <<if scene_id && scene_type && scene_id != '' && scene_type != ''>>
+            <div class="rank-nav">
+                <ul>
+                    <li class="left active" type="group" >
+                        <<if scene_type == '1'>>
+                        <p>周排行</p>
+                        <<else>>
+                        <p>群内周排行</p>
+                        <</if>>
+                    </li>
+                    <li class="right" type="all" >
+                        <p>总排行</p>
+                    </li>
+                </ul>
+            </div>
+            <</if>>
+        </script>
+        <script type="text/html" id="tpl-rank">
+            <<if list && list.length > 0>>
+            <<each list as value i>>
+            <li class="rank-li <<type>>" type="<<type>>" >
+                <div class="rank-num <<if (index+i)<3>>rank-num-sp<</if>> rank-num-<<index+i+1>>"><<if (index+i)>=3>><<index+i+1>><</if>></div>
+                <img class="rank-one-bg" src="/static/m4/img/gamecenter/jwt/rank-bar.png" />
+                <div class="left">
+                    <img src="<<value.headImg_s>>" />
+                </div>
+                <div class="middle">
+                    <p class="username"><<value.name>></p>
+                    <p class="userscore"><<value.score>>分</p>
+                </div>
+                <<if momoid != ''>>
+                <div class="right">
+                    <img onclick="startGame('<<value.momoid>>')" class="pkbtn" src="/static/m4/img/gamecenter/jwt/pk-btn.png" />
+                </div>
+                <</if>>
+            </li>
+            <</each>>
+            <<else>>
+                <div>
+                    <p style="color: #fec1ff; line-height: 36px; text-align: center; ">暂无排行</p>
+                </div>
+            <</if>>
+        </script>
+
+        <div class="popup">
+
+        </div>
+    </div>
+    <script type="text/html" id="tpl-popup">
+        <<if type == 'nopk'>>
+        <div class="popup-main">
+            <img class="popup-frame-img" src="/static/m4/img/gamecenter/jwt/result-popup.png" />
+
+            <div class="part1">
+                <ul class="result-detail">
+                    <li><span class="dtname">COMBO</span><span class="cnt-combo"><<res.combo>></span></li>
+                    <li><span class="dtname">PROFECT</span><span class="cnt-profect"><<res.profect>></span></li>
+                    <li><span class="dtname">GOOD</span><span class="cnt-good"><<res.good>></span></li>
+                    <li><span class="dtname">MISS</span><span class="cnt-miss"><<res.miss>></span></li>
+                </ul>
+            </div>
+            <div class="part2">
+                <img class="popup-result-bar" src="/static/m4/img/gamecenter/jwt/result-bar.png" />
+                <p class="popup-result"><span class="cnt-score"><<res.score>></span>分</p>
+            </div>
+            <div class="part3">
+                <p class="popup-highscore">
+                    最高纪录：<span class="cnt-highscore"><<res.highscore>></span>分
+                </p>
+            </div>
+        </div>
+        <div class="popup-footer">
+            <<if isshare == '1' && momoid != ''>>
+            <a class="popup-btn" onclick="share(true, '<<res.score>>')"><img src="/static/m4/img/gamecenter/jwt/share-result-btn.png" /></a>
+            <</if>>
+            <a class="popup-btn" onclick="startGame(false, true); "><img src="/static/m4/img/gamecenter/jwt/play-again-btn.png" /></a>
+            <<if true || sourceid == 'feed_game_gamecenter' || sourceid == 'launchgame'>>
+            {{if $sourceid == 'share_weixin'}}
+            <a class="popup-btn" onclick="gotoDL(2)" ><img src="//s.momocdn.com/w/u/img/2016/07/11/1468228297199-newbtn.png" /></a>
+            {{else}}
+            <a class="popup-btn" onclick="gotoDL(2)" ><img src="//s.momocdn.com/w/u/img/2016/07/11/1468228297199-newbtn.png" /></a>
+            {{/if}}
+            <<else>>
+            <a class="popup-btn" onclick="gotoDL(1)" ><img src="/static/m4/img/gamecenter/jwt/dl-jwt-btn1.png" /></a>
+            <</if>>
+        </div>
+        <<else>>
+
+            <<if pk_res == true>>
+                <div class="popup-main">
+                    <img class="popup-frame-img" src="/static/m4/img/gamecenter/jwt/result-popup.png" />
+                    <div class="part1" style="text-align: center; top: 56px;">
+                        <img style="width: 80%;" src="http://cdnst.momocdn.com/w/u/img/2016/06/23/1466669966330-pk-win-text.png" />
+                    </div>
+                    <div class="part2">
+                        <img class="popup-result-bar" src="http://cdnst.momocdn.com/w/u/img/2016/06/23/1466669966226-pk-win-bar.png">
+                    </div>
+                    <div class="part3">
+                        <p class="popup-highscore">
+                           <span class="cnt-highscore"><<res.score>></span>分
+                        </p>
+                    </div>
+                </div>
+                <div class="popup-footer">
+                    <<if isshare == '1' && momoid != ''>>
+                    <a class="popup-btn" onclick="share(true, '<<res.score>>')"><img src="/static/m4/img/gamecenter/jwt/share-result-btn.png" /></a>
+                    <</if>>
+                    <a class="popup-btn" onclick="startGame(true, true); "><img src="/static/m4/img/gamecenter/jwt/play-again-btn.png" /></a>
+                    <<if true || sourceid == 'feed_game_gamecenter' || sourceid == 'launchgame'>>
+                    {{if $sourceid == 'share_weixin'}}
+                    <a class="popup-btn" onclick="gotoDL(2)" ><img src="//s.momocdn.com/w/u/img/2016/07/11/1468228297199-newbtn.png" /></a>
+                    {{else}}
+                    <a class="popup-btn" onclick="gotoDL(2)" ><img src="//s.momocdn.com/w/u/img/2016/07/11/1468228297199-newbtn.png" /></a>
+                    {{/if}}
+                    <<else>>
+                    <a class="popup-btn" onclick="gotoDL(1)" ><img src="/static/m4/img/gamecenter/jwt/dl-jwt-btn1.png" /></a>
+                    <</if>>
+                </div>
+            <<else>>
+                <div class="popup-main">
+                    <img class="popup-frame-img" src="/static/m4/img/gamecenter/jwt/result-popup.png" />
+                    <div style="text-align: center; top: 56px;" class="part1">
+                        <img style="width: 75%;" src="/static/m4/img/gamecenter/jwt/pk-fail-title.png" />
+                    </div>
+                    <div class="part2">
+                        <img style="width: 60%;" src="http://cdnst.momocdn.com/w/u/img/2016/06/23/1466669966341-pk-fall-text.png">
+                    </div>
+                    <div class="part3">
+                        <p class="popup-highscore">
+                            <span class="cnt-highscore"><<res.score>></span>分
+                        </p>
+                    </div>
+                </div>
+                <div class="popup-footer">
+                    <a class="popup-btn" onclick="startGame(true, true); "><img src="/static/m4/img/gamecenter/jwt/play-again-btn.png" /></a>
+                    <<if true || sourceid == 'feed_game_gamecenter' || sourceid == 'launchgame'>>
+                    {{if $sourceid == 'share_weixin'}}
+                    <a class="popup-btn" onclick="gotoDL(2)" ><img src="//s.momocdn.com/w/u/img/2016/07/11/1468228297199-newbtn.png" /></a>
+                    {{else}}
+                    <a class="popup-btn" onclick="gotoDL(2)" ><img src="//s.momocdn.com/w/u/img/2016/07/11/1468228297199-newbtn.png" /></a>
+                    {{/if}}
+                    <<else>>
+                    <a class="popup-btn" onclick="gotoDL(1)" ><img src="/static/m4/img/gamecenter/jwt/dl-jwt-btn1.png" /></a>
+                    <</if>>
+                </div>
+
+            <</if>>
+        <</if>>
+    </script>
+
+</body>
+
+<script type="text/javascript">
+
+window.SONG = SongBook[randomNum([0, SongBook.length -1])];
+window.isShare =  _DATA.is_share;
+window.islowdevice = navigator.userAgent.search('GT-I9300') != '-1';
+window.isMIdevice = navigator.userAgent.search('MI') != '-1';
+
+mm.invoke('setPulldown',{type:0});
+
+
+if(window.isShare == '1') {
+    mm.invoke('init',{
+        enable : {
+            ui_btn: 1
+        },
+        ui_btn : {
+            title : '',
+            dropdown: 0,
+            buttons : [
+                {
+                    text : '分享',
+                    action : 0,
+                    param : {
+                        callback: 'share'
+                    }
+
+                }
+            ]
+        }
+    })
+}
+
+
+
+function randomNum(arr){
+    var n = arr[0];
+    var m = arr[1]
+    var t = m-n+1;
+    var c = Math.floor(Math.random() * t + n)
+    return c;
+}
+
+
+// 分数
+function Score() {
+    this.profect = 0;
+    this.good = 0;
+    this.combo = 0;
+    this.tempComb = 0;
+}
+
+Score.prototype = {
+    constructor : Score,
+    addProfect : function() {
+        this.profect++;
+    },
+    addGood : function() {
+        this.good++;
+    },
+    addComb : function(flag) {
+        if(flag == true) {
+            this.tempComb++;
+        }else{
+            this.tempComb = 0;
+        }
+
+        if(this.tempComb > this.combo) {
+            this.combo = this.tempComb;
+        }
+    },
+    getScore : function() {
+        this.miss = SONG.lines.length - this.profect - this.good;
+        return this.profect*10 + this.good*5 + this.combo*15;
+
+    }
+}
+
+
+// 方向谱
+function MusicLine(o) {
+    this.stage = o.stage;
+    this.loader = o.loader;
+    this.x = this.stage.width/2;
+    this.y = 180;
+    this.note_w = 64;
+}
+
+MusicLine.prototype = {
+    constructor : MusicLine,
+    createLineNote : function(line_str) {
+        this.destroyNotes();
+        this.line = line_str.split('');
+        this.setIndex(0);
+        var start = this.x - (this.note_w * 0.8 * this.line.length/2) + this.note_w * 0.4;
+        this.notes = [];
+        for(var i = 0; i<this.line.length; i++) {
+            var ix = start + this.note_w * 0.8 * i;
+            var note = new Note({stage:this.stage, loader:this.loader, x:ix, y:this.y, width:this.note_w, type:this.line[i]});
+            this.notes.push(note);
+        }
+    },
+    destroyNotes : function() {
+        if(this.notes && this.notes.length > 0) {
+            for(var i = 0; i<this.notes.length; i++) {
+                this.notes[i].destroy();
+            }
+        }
+    },
+    setIndex : function(index) {
+        this.index = index;
+    }
+}
+
+//单个方向符
+function Note(o) {
+
+    this.stage = o.stage;
+    this.loader = o.loader;
+    this.x = o.x;
+    this.y = o.y;
+    this.width = o.width;
+
+    this.type = o.type;
+
+    this.height = 55;
+    this.scale = 0.75;
+    this.regx = this.width/2;
+    this.regy = this.height/2;
+    this.resource = 'arrows';
+
+    this.init();
+}
+
+Note.prototype = {
+    constructor : Note,
+    init : function() {
+
+        this.ix = (this.type/2 - 1) * this.width;
+        this.setHighlight();
+
+        this.bitmap = new createjs.Bitmap(this.loader.getResult(this.resource));
+        this.bitmap.sourceRect = new createjs.Rectangle(this.ix, 0, this.width, this.height);
+        this.bitmap.setTransform(this.x, this.y, this.scale, this.scale, 0, 0, 0, this.regx, this.regy);
+        this.stage.addChild(this.bitmap);
+    },
+    setHighlight : function() {
+        var resource = 'arrowbg';
+        var width = height = 58;
+        var scale = 0.85;
+        this.highlight = new createjs.Bitmap(this.loader.getResult(resource));
+        this.highlight.sourceRect = new createjs.Rectangle(0, 0, width, height);
+        this.highlight.setTransform(this.x, this.y, scale, scale, 0, 0, 0, this.regx, this.regy);
+        this.stage.addChild(this.highlight);
+        this.highlight.visible = false;
+    },
+    showHighlight : function() {
+        this.highlight.visible = true;
+    },
+    removeHighlight : function() {
+        this.highlight.visible = false;
+    },
+    destroy : function() {
+        this.stage.removeChild(this.bitmap);
+        this.stage.removeChild(this.highlight);
+    }
+}
+
+// 四方向key
+function ArrowKey(o) {
+    this.loader = o.loader;
+    this.stage = o.stage;
+    this.x = o.x;
+    this.y = o.y;
+    this.ix = o.ix;
+    this.iy = o.iy;
+    this.onPressup = o.onPressup;
+    this.width = 115;
+    this.height = 115;
+    this.scale = 0.75;
+    this.regx = this.width/2;
+    this.regy = this.height/2;
+    this.resource = 'arrowkey';
+    this.type = o.type;
+    this.bitmap;
+    this.init();
+}
+
+ArrowKey.prototype = {
+    constructor : ArrowKey,
+    init : function() {
+        var self = this;
+        this.bitmap = new createjs.Bitmap(this.loader.getResult(this.resource));
+        this.bitmap.sourceRect = new createjs.Rectangle(this.ix, this.iy, this.width, this.height);
+        this.bitmap.setTransform(this.x, this.y, this.scale, this.scale, 0, 0, 0, this.regx, this.regy);
+        this.stage.addChild(this.bitmap);
+        this.bitmap.addEventListener('pressup', function(e){
+
+            if(window.islowdevice && window.presstime && (new Date().getTime() - window.presstime < 400)) {
+                return;
+            }
+            window.presstime = new Date().getTime();
+
+            self.onPressup(e, self.type);
+            createjs.Tween.get(self.bitmap)
+                .to({scaleX:0.6, scaleY:0.6}, 100)
+                .to({scaleX:self.scale, scaleY:self.scale}, 100);
+        });
+    }
+};
+
+// P点模块
+function PPoint(o) {
+
+    this.loader = o.loader;
+    this.stage = o.stage;
+    this.grade = o.grade;
+
+    this.width = 225;
+    this.height = 24;
+    this.radius = 12;
+    this.x = 220;
+    this.y = 44;
+
+    this.start = this.x + this.radius;
+    this.end = this.x + this.width - this.radius;
+    this.total = this.end - this.start;
+
+
+    this.p_point;   // P点
+    this.m_point;   // 移动点
+    this.p_bar;     // 框框
+
+    this.pr_per = 0.02; // profect 区间
+    this.go_per = 0.1; // good 区间
+    this.pp_per = 0.8;
+
+    this.init();
+
+}
+
+PPoint.prototype = {
+    constructor : PPoint,
+    init : function() {
+        this.createBar();
+        this.createP();
+        this.createM();
+        this.createFlicker();
+    },
+    createBar : function() {
+
+        // P点框 start: 225, end: 445, total: 220
+        var width = this.width;
+        var height = this.height;
+        var radius = this.radius;
+        var x = this.x;
+        var y = this.y;
+        var border_color = '#ffffff';
+
+        var g = new createjs.Graphics().beginStroke(border_color).drawRoundRect(0, 0, this.width, this.height, this.radius);
+        this.p_bar = new createjs.Shape(g);
+        this.p_bar.setTransform(x, y, 1, 1);
+        this.stage.addChild(this.p_bar);
+    },
+    createP : function() {
+        var width = 60;
+        var height = 30;
+        var x = this.start + (this.total*0.8);
+        var y = this.y + this.height/2;
+        var ix = 30;
+        var iy = 0;
+        var scale = 0.9;
+        var regx = width/2;
+        var regy = height/2;
+        var resource = 'ball';
+
+        this.p_point = new createjs.Bitmap(this.loader.getResult(resource));
+        this.p_point.sourceRect = new createjs.Rectangle(ix, iy, width, height);
+        this.p_point.setTransform(x, y, scale, scale, 0, 0, 0, regx, regy);
+        this.stage.addChild(this.p_point);
+
+    },
+    createM : function() {
+        var width = 30;
+        var height = 30;
+        var x = this.start;
+        var y = this.y + this.height/2;
+        var ix = 0;
+        var iy = 0;
+        var scale = 0.9;
+        var regx = width/2;
+        var regy = height/2;
+        var resource = 'ball';
+
+        if(!this.m_point) {
+            this.m_point = new createjs.Bitmap(this.loader.getResult(resource));
+            this.m_point.sourceRect = new createjs.Rectangle(ix, iy, width, height);
+            this.m_point.setTransform(x, y, scale, scale, 0, 0, 0, regx, regy);
+            this.stage.addChild(this.m_point);
+
+        }else{
+            this.m_point.alpha = 1;
+            this.m_point.setTransform(x, y, scale, scale, 0, 0, 0, regx, regy);
+        }
+
+    },
+    createFlicker : function() {
+
+        var width = 68;
+        var height = 68;
+        this.flicker1 = new createjs.Bitmap(this.loader.getResult('flicker1'));
+        this.flicker1.sourceRect = new createjs.Rectangle(0, 0, width, height);
+        this.flicker1.alpha = 0;
+        this.stage.addChild(this.flicker1);
+        this.flicker2 = new createjs.Bitmap(this.loader.getResult('flicker2'));
+        this.flicker2.sourceRect = new createjs.Rectangle(0, 0, width, height);
+        this.flicker2.alpha = 0;
+        this.stage.addChild(this.flicker2);
+
+    },
+    waiting : function() {
+        createjs.Tween.get(this.m_point, {loop:true}).to({alpha:0}, SONG.starttime/6, createjs.Ease.getPowInOut(2));
+    },
+    moving : function(score) {
+        var self = this;
+        if(this.is_press == false) {
+            score.addComb(false);
+        }
+        this.move_starttime = new Date().getTime();
+        this.is_press = false;
+        this.createM();
+        createjs.Tween.get(this.m_point, {override:true})
+            .to({x: (this.start + this.total * (this.pp_per + this.go_per))}, SONG.linetime *(this.pp_per + this.go_per))
+            .call(function(){
+                if(self.is_press == false){
+                    self.grade.showGrade(2);
+                }
+            })
+            .to({x: (this.start + this.total)}, SONG.linetime *(1 - this.pp_per - this.go_per))
+
+    },
+    pressSpace : function(score) {
+        var self = this;
+        if(!this.is_press) {
+            var ptime = new Date().getTime();
+            var val = ptime - this.move_starttime;
+            this.is_press = true;
+            if(val >= SONG.linetime * (this.pp_per - this.pr_per) && val <= SONG.linetime * (this.pp_per + this.pr_per)) {
+                // profect
+                this.flicking('profect', function(){
+                    self.clicked();
+                });
+                score.addProfect();
+                score.addComb(true);
+                showCurrentScore(score.getScore())
+                return 0;
+            }else if(val >= SONG.linetime * (this.pp_per - this.go_per) && val <= SONG.linetime * (this.pp_per + this.go_per)) {
+                // good
+                this.flicking('good', function(){
+                    self.clicked();
+                });
+                score.addGood();
+                score.addComb(true);
+                showCurrentScore(score.getScore())
+                return 1;
+            }else{
+                // miss
+                this.clicked();
+                score.addComb(false);
+                return 2;
+            }
+        }
+
+    },
+    clicked : function() {
+
+        if(this.move_starttime && new Date().getTime() - this.move_starttime < SONG.linetime * (this.pp_per + this.go_per)) {
+            this.is_press = true;
+            this.m_point.alpha = 0;
+        }
+    },
+    flicking : function(type, callback) {
+
+        createjs.Tween.get(this.m_point, {override:true});
+
+        this.flicker1.setTransform(this.m_point.x, this.m_point.y, 0.3, 0.3, 0, 0, 0, 34, 34);
+        this.flicker1.alpha = 0.5;
+        createjs.Tween.get(this.flicker1)
+            .to({scaleX:1, scaleY :1, alpha:1}, 50)
+            .wait(50)
+            .to({alpha: 0}, 100)
+            .call(function(){
+                if(callback) {
+                    callback();
+                }
+            });
+
+        if(type == 'profect') {
+            this.flicker2.setTransform(this.m_point.x, this.m_point.y, 0.3, 0.3, 0, 0, 0, 34, 34);
+            this.flicker2.alpha = 0.5;
+            createjs.Tween.get(this.flicker2)
+                .to({scaleX:1, scaleY :1, alpha:1}, 50)
+                .wait(50)
+                .to({alpha: 0}, 100)
+                .call(function(){
+                    if(callback) {
+                        callback();
+                    }
+                });
+
+        }
+
+
+    }
+}
+
+// space 键
+function createSpaceKey(stage, loader) {
+
+    var width = 175;
+    var height = 185;
+    var x = 100;
+    var y = 360;
+    var scale = 0.75;
+    var regx = width/2;
+    var regy = height/2;
+    var resource = 'spacekey';
+
+    var spacekey = new createjs.Bitmap(loader.getResult(resource));
+    spacekey.setTransform(x, y, scale, scale, 0, 0, 0, regx, regy);
+    stage.addChild(spacekey);
+
+
+    return spacekey;
+};
+
+
+// 连击元素
+function Combo(o) {
+
+    this.loader = o.loader;
+    this.stage = o.stage;
+    this.bitmap;
+
+    this.x = 10;
+    this.y = 36;
+    this.ix = 0;
+    this.iy = 0;
+    this.width = 197;
+    this.height = 64;
+    this.scale = 0.8;
+    this.resource = 'texts';
+
+    this.init();
+}
+
+Combo.prototype = {
+    constructor : Combo,
+    init : function() {
+        this.bitmap = new createjs.Bitmap(this.loader.getResult(this.resource));
+        this.bitmap.sourceRect = new createjs.Rectangle(this.ix, this.iy, this.width, this.height);
+        this.bitmap.setTransform(this.x, this.y, this.scale, this.scale);
+        this.stage.addChild(this.bitmap);
+        this.bitmap.alpha = 0;
+    },
+    showComb : function(num) {
+        if(this.comboNums) {
+            this.removeCombNum();
+        }
+        this.createCombNum(num);
+
+        for(var i = 0; i<=this.comboNums.length; i++) {
+            var target = i==this.comboNums.length ? this.bitmap : this.comboNums[i].bitmap;
+            createjs.Tween.get(target)
+                .to({y:this.y - 24},100)
+                .to({y:this.y, alpha:1}, 200)
+                .wait(300)
+                .to({alpha:0}, 100);
+        }
+
+    },
+    removeCombNum : function() {
+        for(var i = 0; i<this.comboNums.length;i++) {
+            this.stage.removeChild(this.comboNums[i].bitmap);
+        }
+    },
+    createCombNum : function(num) {
+
+        var arr = [];
+        this.comboNums = [];
+        if(num<10) {
+            arr.push(num);
+        }else if(num<100) {
+            arr[0] = Math.floor(num/10);
+            arr[1] = num - arr[0]*10;
+        }else{
+            arr[0] = Math.floor(num/100);
+            arr[1] = Math.floor((num - arr[0]*100)/10);
+            arr[2] = num - arr[0]*100 - arr[1]*10;
+        }
+
+        for(var i = 0; i<arr.length; i++) {
+            var c = new ComboNum({stage: this.stage, loader: this.loader, i:i, n:arr[i] });
+            this.comboNums.push(c);
+        }
+    }
+};
+
+// 连击数字
+function ComboNum(o) {
+
+    this.loader = o.loader;
+    this.stage = o.stage;
+    this.bitmap;
+
+    this.n = o.n;
+    this.i = o.i;
+    this.width = 28;
+    this.height = 40;
+    this.x = 150 + this.width*this.i;
+    this.y = 36;
+    this.ix_arr = [252, 0, 28, 56, 84, 112, 140, 168, 196, 224, 252];
+    this.scale = 0.8;
+    this.resource = 'nums';
+
+    this.init();
+
+}
+
+ComboNum.prototype = {
+    constructor : ComboNum,
+    init : function() {
+        this.bitmap = new createjs.Bitmap(this.loader.getResult(this.resource));
+        this.bitmap.sourceRect = new createjs.Rectangle(this.ix_arr[this.n], 0, this.width, this.height);
+        this.bitmap.setTransform(this.x, this.y, this.scale, this.scale);
+        this.stage.addChild(this.bitmap);
+        this.bitmap.alpha = 0;
+    }
+}
+
+// profect good miss
+function Grade(o) {
+
+    this.loader = o.loader;
+    this.stage = o.stage;
+
+    this.x = this.stage.width/2;
+    this.y = 115;
+    this.width = 197;
+    this.height = 64;
+    this.iy_arr = [62.5, 125, 187.5];
+    this.scale = 0.8;
+    this.regx = this.width/2;
+    this.regy = this.height/2;
+    this.resource = 'texts';
+
+    this.init();
+}
+
+Grade.prototype = {
+    constructor : Grade,
+    init : function() {
+        this.bitmap = new createjs.Bitmap(this.loader.getResult(this.resource));
+        this.bitmap.setTransform(this.x, this.y, 0, 0, 0, 0, 0, this.regx, this.regy);
+        this.stage.addChild(this.bitmap);
+    },
+    showGrade :function(type) {
+        this.bitmap.alpha = 1;
+        this.bitmap.sourceRect = new createjs.Rectangle(0, this.iy_arr[type], this.width, this.height);
+        createjs.Tween.get(this.bitmap)
+            .to({scaleX:this.scale, scaleY:this.scale}, 200, createjs.Ease.getPowInOut(2))
+            .wait(200)
+            .to({alpha:0}, 100)
+            .to({scaleX:0, scaleY:0}, 100);
+    }
+}
+
+
+// 舞台
+function createStage(callback) {
+
+    if(window.stage && window.loader) {
+        $('#Canvas').remove();
+        $('body').append('<canvas id="Canvas" class="animation"></canvas>');
+
+        var width = 480;
+        var height = window.islowdevice ? ($(window).height() * (480/$(window).width())) : 422*480/400;
+        var canvas = $('#Canvas');
+        canvas.attr('width', width);
+        canvas.attr('height', height);
+        window.stage = new createjs.Stage('Canvas');
+        createjs.Touch.enable(stage);
+        window.stage.width = width;
+        window.stage.height = height;
+        callback(window.stage, window.loader);
+    }else{
+        var width = 480;
+        var height = window.islowdevice ? ($(window).height() * (480/$(window).width())) : 422*480/400;
+        window.stage;
+        window.loader;
+
+        var canvas = $('#Canvas');
+        canvas.attr('width', width);
+        canvas.attr('height', height);
+
+        stage = new createjs.Stage('Canvas');
+        createjs.Touch.enable(stage);
+        stage.width = width;
+        stage.height = height;
+
+        var path_img = '/static/m4/img/gamecenter/jwt/';
+        var manifest = [
+            {id: 'arrows', src: path_img + 'arrows.png'},
+            {id: 'spacekey', src: path_img + 'space-btn.png'},
+            {id: 'arrowkey', src: path_img + 'arrow-btns.png'},
+            {id: 'texts', src: path_img + 'texts.png'},
+            {id: 'nums', src: path_img + 'nums.png'},
+            {id: 'ball', src: path_img + 'ball.png'},
+            {id: 'flicker1', src: path_img + 'flicker1.png'},
+            {id: 'flicker2', src: path_img + 'flicker2.png'},
+            {id: 'arrows', src: path_img + 'arrows.png'},
+            {id: 'arrowbg', src: path_img + 'arrow-suc-bg.png'},
+            {id: 'song1', src: SONG.url}
+        ];
+
+        loader = new createjs.LoadQueue(false);
+
+        createjs.Sound.alternateExtensions = ["mp3"];
+        loader.installPlugin(createjs.Sound);
+        createjs.Sound.registerPlugins([createjs.WebAudioPlugin]);
+        createjs.WebAudioPlugin.playEmptySound();
+        loader.addEventListener("complete" , function(){
+            callback(stage, loader);
+        });
+        loader.loadManifest(manifest);
+    }
+
+
+};
+
+// 静态绘制
+function createStaticElem(stage, loader, listeners) {
+
+    // 箭头串框
+    (function(){
+        var width = 410;
+        var height = 60;
+        var radius = 30;
+        var x = stage.width/2;
+        var y = 180;
+        var regx = width/2;
+        var regy = height/2;
+        var border_color = '#ffffff';
+
+        var g = new createjs.Graphics().beginStroke(border_color).drawRoundRect(0, 0, width, height, radius);
+        var arrowbar = new createjs.Shape(g);
+        arrowbar.setTransform(x, y, 1, 1, 0, 0, 0, regx, regy);
+        stage.addChild(arrowbar);
+    })();
+
+
+    // space key
+    (function(){
+        var width = 175;
+        var height = 185;
+        var x = 100;
+        var y = 360;
+        var scale = 0.75;
+        var regx = width/2;
+        var regy = height/2;
+        var resource = 'spacekey';
+
+        var spacekey = new createjs.Bitmap(loader.getResult(resource));
+        spacekey.setTransform(x, y, scale, scale, 0, 0, 0, regx, regy);
+        stage.addChild(spacekey);
+        spacekey.addEventListener('pressup', function(){
+
+            if(window.islowdevice && window.presstime && (new Date().getTime() - window.presstime < 300)) {
+                return;
+            }
+            window.presstime = new Date().getTime();
+            listeners['spacekey']();
+            createjs.Tween.get(spacekey)
+                .to({scaleX:0.6, scaleY:0.6}, 200)
+                .to({scaleX:scale, scaleY:scale}, 200);
+        });
+    })();
+
+    // 4 keys (top:2, right:4, bottom:6, left:8)
+    new ArrowKey({type: '8', x:290, y:360, ix:345, iy:0, stage:stage, loader:loader, onPressup:listeners['fourkeys']});
+    new ArrowKey({type: '4', x:410, y:360, ix:115, iy:0, stage:stage, loader:loader, onPressup:listeners['fourkeys']});
+    new ArrowKey({type: '2', x:350, y:295, ix:0, iy:0, stage:stage, loader:loader, onPressup:listeners['fourkeys']});
+    new ArrowKey({type: '6', x:350, y:425, ix:230, iy:0, stage:stage, loader:loader, onPressup:listeners['fourkeys']});
+}
+
+
+
+function startGame(pk_momoid, play_again) {
+
+    window.currentScore = 0;
+    $('.spinner').show();
+    $('.current-score p').html('');
+
+    var game_data = {};
+    var ajax_type = 'uploadScore';
+    var type = 'nopk';
+    game_data.is_from_share = _DATA.is_share;
+
+    if(play_again) {
+        click('BH199C');
+    }else{
+        click('BH304E');
+    }
+
+
+    if(_DATA.scene_id && _DATA.scene_type){
+        game_data.scene_id = _DATA.scene_id;
+        game_data.scene_type = _DATA.scene_type;
+        ajax_type = 'uploadPKScore';
+    }
+    game_data.from_momoid = _DATA.from_momoid;
+
+    if(pk_momoid) {
+        game_data.pk_momoid =  pk_momoid;
+        ajax_type = 'uploadPKScore';
+        type = 'pk';
+        click('BH58BF');
+    }
+
+    $.ajax({
+        type : 'get',
+        url : '/h5game/2016/jwtgame/startGame',
+        data : game_data,
+        success : function(resp) {
+
+        }
+    });
+
+
+    if($('body').hasClass('rank-show')) {
+        $('body').removeClass('rank-show');
+    }
+
+
+    if($('body').hasClass('end-game')){
+        $('body').removeClass('end-game');
+    }
+
+    if(window.islowdevice) {
+        $('#Canvas').removeClass('animation');
+    }
+    $('body').addClass('start-game');
+
+    createStage(function(stage, loader){
+        var ppoint, combo, grade, ml, score;
+        var listeners = {
+            spacekey : function() {
+                if(ml && ml.line) {
+                    if(ml.line.length == ml.index) {
+                        var g = ppoint.pressSpace(score);
+                        if(g !== undefined) {
+                            grade.showGrade(g);
+                        }
+                    }else{
+                        ppoint.clicked();
+                        grade.showGrade(2);
+                        score.addComb(false);
+                    }
+                    if(score.tempComb != 0) {
+                        combo.showComb(score.tempComb);
+                    }
+                }
+
+            },
+            fourkeys : function(e, type) {
+                if(ml && ml.line) {
+                    var ct = ml.line[ml.index];
+                    if(ct == type) {
+                        ml.notes[ml.index].showHighlight();
+                        if(ml.index < ml.line.length) {
+                            ml.setIndex(ml.index+1);
+                        }
+                    }else{
+                        for(var i = 0; i<ml.index; i++) {
+                            ml.notes[i].removeHighlight();
+                        }
+                        ml.setIndex(0);
+                    }
+                }
+
+            }
+        };
+
+        createStaticElem(stage, loader, listeners);
+
+        grade = new Grade({stage:stage, loader:loader});
+        ppoint = new PPoint({stage:stage, loader:loader, grade:grade});
+        combo = new Combo({stage:stage, loader:loader});
+        score = new Score();
+        ml = new MusicLine({stage:stage, loader:loader});
+
+        if(mm.is_webview && isMIdevice) {
+            mm.invoke('startAudio', {
+                track: location.protocol + SONG.url,
+                type: 0
+            }, function(resp){
+                var r = JSON.parse(resp)
+                if(r.status == 1) {
+                    go();
+                }
+            })
+
+        }else{
+            createjs.Sound.play('song1');
+            go();
+        }
+
+        function go() {
+            $('.spinner').hide();
+            ppoint.waiting();
+            (function timeset(index){
+                if(index < SONG.lines.length) {
+                    setTimeout(function(){
+                        ml.createLineNote(SONG.lines[index]);
+                        timeset(index+1);
+                        ppoint.moving(score);
+                    }, index == 0? SONG.starttime : SONG.linetime);
+                }else{
+                    setTimeout(function(){
+                        endGame(score, game_data, ajax_type, type);
+                    },SONG.linetime);
+                }
+            })(0);
+
+            createjs.Ticker.timingMode = createjs.Ticker.RAF;
+            createjs.Ticker.setFPS(60);
+            createjs.Ticker.addEventListener("tick", function(){
+                stage.update();
+            });
+        }
+
+
+    });
+}
+
+function endGame(score, game_data, ajax_type, type) {
+
+    click('BH8A25')
+
+    var result = {
+        score : score.getScore(),
+        combo : score.combo,
+        profect : score.profect,
+        good : score.good,
+        miss : score.miss
+    };
+
+
+    game_data.score = result.score;
+    result.highscore = Math.max(parseInt(_DATA.highscore||0), result.score);
+
+    $.ajax({
+        type : 'get',
+        url : '/h5game/2016/jwtgame/' + ajax_type,
+        data : game_data,
+        success : function(resp) {
+
+//            if(type == 'pk') {
+//                alert(JSON.stringify(game_data) + "----" + resp.pk_result)
+//            }
+            $('.popup').html(template('tpl-popup', {res: result, type: type, pk_res: resp.pk_result, isshare: window.isShare, sourceid : window.sourceid, momoid : _DATA.momoid}))
+
+            $('body').removeClass('start-game');
+            $('body').addClass('end-game');
+        }
+    });
+
+}
+
+
+function showCurrentScore(score) {
+
+    window.currentScore = window.currentScore || 0;
+    window.timer = setInterval(function(){
+
+        if(window.currentScore != score) {
+            window.currentScore = window.currentScore + 5;
+            $('.current-score p').html(window.currentScore);
+        }else{
+            clearInterval(window.timer);
+        }
+
+    },100)
+}
+
+
+function showRank() {
+
+    window.rankdata = window.rankdata || {
+        all : null,
+        group : null
+    };
+
+    var data = {};
+    var inittype = 'all';
+
+
+
+    if(_DATA.scene_id && _DATA.scene_type) {
+        inittype = 'group';
+
+        if(!showRank.navinit) {
+
+            $('.rank').on('click', '.rank-nav ul li', function(){
+                if($(this).hasClass('active')) {
+                    return;
+                }else{
+                    $('.rank-nav ul li').removeClass('active');
+                    $(this).addClass('active');
+                    var type = $(this).attr('type');
+
+                    if(window.rankdata[type]) {
+                        $('.ranklist').html(template('tpl-rank', {type:type, list:window.rankdata[type], momoid : _DATA.momoid, index :0}));
+                    }else{
+                        getRankData(type, function(list){
+                            window.rankdata[type] = list;
+                            $('.ranklist').html(template('tpl-rank', {type:type, list:window.rankdata[type], momoid : _DATA.momoid, index :0}));
+                        });
+                    }
+                }
+            });
+            showRank.navinit = true;
+        }
+    }
+
+
+    if(window.rankdata[inittype]) {
+
+        $('.rank-nav-wrapper').html(template('tpl-ranknav', {scene_id : _DATA.scene_id, scene_type :_DATA.scene_type}));
+        $('.ranklist').html(template('tpl-rank', {type: inittype, list:window.rankdata[inittype], momoid : _DATA.momoid, index :0}));
+        $('body').addClass('rank-show');
+    }else{
+        getRankData(inittype, function(list){
+            window.rankdata[inittype] = list;
+            initRankTemp(list);
+
+        });
+
+    }
+
+    function initRankTemp(list) {
+        $('.rank-nav-wrapper').html(template('tpl-ranknav', {scene_id : _DATA.scene_id, scene_type :_DATA.scene_type}));
+        $('.ranklist').html(template('tpl-rank', {type: inittype, list:list, momoid : _DATA.momoid, index :0}));
+
+        $('body').addClass('rank-show');
+
+        $('.rank').on('click', function(e){
+            var target = $(e.target);
+            if(!(target.hasClass('rank-li') || target.parents('.rank-li').length > 0 || target.hasClass('rank-nav') || target.parents('.rank-nav').length >0 )) {
+                $('body').removeClass('rank-show');
+            }
+        });
+
+
+        $('body.rank-show .transparent-mask').on('click', function(){
+            $('body').removeClass('rank-show');
+        });
+
+    }
+
+    click('BH3A39');
+
+}
+
+
+function getRankData(type, callback) {
+
+    var data = {};
+    if(type == 'group') {
+        data = {scene_id : _DATA.scene_id, scene_type : _DATA.scene_type};
+    }
+
+    $.ajax({
+        type : 'get',
+        url : '/h5game/2016/jwtgame/getWorldRank',
+        data : data,
+        success : function(resp) {
+            if(resp.ec == 200) {
+                var list = resp.list;
+                if(callback) {
+                    callback(list);
+                }
+            }
+        }
+    });
+
+}
+
+
+function click(btnid) {
+
+    $.ajax({
+        type : 'get',
+        url : '/h5game/2016/jwtgame/click',
+        data : {btnid: btnid, sourceid: window.sourceid || 'gamecenter_game'},
+        success : function(resp) {
+
+        }
+    });
+
+}
+
+
+function showRules() {
+    $('.rules').html(template('tpl-rules', {}));
+    $('body').addClass('rules-show');
+    $('body.rules-show .transparent-mask').on('click', function(){
+        $('body').removeClass('rules-show');
+    });
+
+    click('BH0A09');
+}
+
+function gotoDL(type) {
+
+    if(type == 1) {
+        click('BH690F');
+    }else{
+        click('BHEFAD');
+    }
+
+    if(mm.is_webview) {
+        mm.invoke('directGoto', {
+            param : '[查看详情|goto_fly|%7B%22frameName%22%3A%22detail%22%2C%22url%22%3A%22https%3A%2F%2Fgame.immomo.com%2Fcenter%2Ffly%2Fdetail%3Fappid%3Dex_mmjwt2_4H55vp%22%7D|h5game]'
+        });
+    }else{
+        location.href = 'https://game.immomo.com/m/gamefly/detail.html?appid=ex_mmjwt2_4H55vp&switch_to_referer=' + 'h5game';
+    }
+}
+
+
+function share(from_btn, score) {
+
+    var textarr = [
+        '快来测测你的手速跟反应，哪个更快~',
+        '跟着我，左手右手一个快动作~右手左手快动作重播~',
+        '手速大神养成记，手残党你们准备好了吗?'
+    ];
+
+    var sharetitle = '劲舞达人';
+    var sharetext = from_btn ? '我在《劲舞达人》中获得了'+score+'分，简直棒呆，快来挑战我吧！' : textarr[randomNum([0, textarr.length-1])];
+    var sharepic = 'http://cdnst.momocdn.com/w/u/img/2016/06/27/1466995274572-share-icon.png';
+    var sharedesc = '我是高手我先来';
+    var gotoUrl = 'https://game.immomo.com/h5game/2016/jwtgame/game?sourceid=feed_game_gamecenter';
+
+    var config = {
+        title : sharetitle,
+        text : sharetext,
+        pic : sharepic,
+        url : gotoUrl,
+        callback : ''
+    };
+
+    var config_momo_contacts = {
+        title : sharetitle,
+        text : '我正在玩《劲舞达人》小游戏中，快来挑战我的最快手速~',
+        pic : sharepic,
+        url : gotoUrl,
+        callback : ''
+    };
+
+    var shareConfig = {
+        title : sharetitle,
+        text : sharetext,
+        pic : sharepic,
+        url : gotoUrl,
+        apps : [ 'momo_feed', 'momo_contacts', 'weixin_friend', 'weixin', 'sina', 'alipay_friend', 'qzone', 'qq'],
+        configs : {
+            'momo_feed' : {
+                title : sharetitle,
+                text : sharetext,
+                pic : sharepic,
+                resource : {
+                    title : sharetitle,
+                    desc : sharedesc,
+                    icon : sharepic,
+                    ignore_pic : 1,
+                    link: 'https://game.immomo.com/h5game/2016/jwtgame/game?sourceid=feed_game_gamecenter'
+                },
+                callback : ''
+            },
+            'momo_contacts' : config_momo_contacts,
+            'weixin_friend' : config,
+            'weixin' : config,
+            'sina' : config,
+            'alipay_friend' : config,
+            'qzone' : config,
+            'qq' : config
+        },
+        callback : 'shareCallback'
+
+    };
+
+    window.shareCallback = function() {
+        click('BH513F');
+    }
+
+    mm.invoke('callShare',shareConfig);
+}
+
+
+function getParam(name) {
+    var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
+    var r = location.search.substr(location.search.indexOf("?")+1).match(reg);
+    if (r!=null) return unescape(r[2]); return null;
+};
+
+
+if(sourceid == 'share_weixin') {
+
+    $.getScript('//res.wx.qq.com/open/js/jweixin-1.0.0.js',function(){
+        $.ajax({
+
+            type : 'get',
+            url : '/center/fly/getWeixinSign',
+            data : {url:encodeURIComponent(window.location.href)},
+            success : function(response) {
+                var o=response;
+                if(o['data']){
+                    wx.config({
+                        debug: false, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+                        appId: o.data.sign.appid, // 必填，公众号的唯一标识
+                        timestamp: o.data.sign.timestamp, // 必填，生成签名的时间戳
+                        nonceStr: o.data.sign.noncestr, // 必填，生成签名的随机串
+                        signature: o.data.sign.signature,// 必填，签名，见附录1
+                        jsApiList: ['onMenuShareTimeline','onMenuShareAppMessage','onMenuShareQQ','onMenuShareWeibo','onMenuShareQZone'] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
+                    });
+
+                    wx.ready(function(){
+                        var pic = 'http://cdnst.momocdn.com/w/u/img/2016/06/27/1466995274572-share-icon.png';
+                        wx.onMenuShareTimeline({
+                            title: '我正在玩《劲舞达人》小游戏，快来测测你的手速跟反应，哪个更快~', // 分享标题
+                            link: window.location.href, // 分享链接
+                            imgUrl: pic, // 分享图标
+                            success: function () {
+                                // 用户确认分享后执行的回调函数
+                            }
+                        });
+                        wx.onMenuShareAppMessage({
+                            title: '劲舞达人', // 分享标题
+                            desc: '我正在玩《劲舞达人》小游戏中，快来挑战我的最快手速~', // 分享描述
+                            link: window.location.href, // 分享链接
+                            imgUrl: pic, // 分享图标
+                            success: function () {
+                                // 用户确认分享后执行的回调函数
+                            }
+                        });
+                        var qqshare = {
+                            title: '劲舞达人', // 分享标题
+                            desc: '我正在玩《劲舞达人》小游戏中，快来挑战我的最快手速~', // 分享描述
+                            link: window.location.href, // 分享链接
+                            imgUrl: pic, // 分享图标
+                            success: function () {
+                                // 用户确认分享后执行的回调函数
+                            }
+                        };
+                        wx.onMenuShareQQ(qqshare);
+                        wx.onMenuShareWeibo(qqshare);
+                        wx.onMenuShareQZone(qqshare);
+                    });
+                    wx.error(function(res){
+                        //alert(JSON.stringify(res));
+                    })
+                }
+            }
+        });
+    });
+
+
+}
+
+
+</script>
+</html>
