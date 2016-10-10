@@ -1,7 +1,7 @@
 {
   "name": "dance-rush",
   "version": "1.0.0",
-  "description": "一个防劲舞团的H5小游戏",
+  "description": "一个仿劲舞团的H5小游戏",
   "main": "game.html",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
